@@ -118,10 +118,10 @@ env:
   # Leave empty for now (see the file header). The first published
   # GoogleSQL prebuilt populates these on its release commit.
   # ------------------------------------------------------------------
-  RELEASE_GOOGLESQL_PREBUILT_URL: "https://github.com/vantaboard/bigquery-emulator/releases/download/googlesql-prebuilt/v0.1.3+gs-36dd14aa0657/googlesql-prebuilt-linux-amd64-clang18-36dd14aa0657-v0.1.3.tar.gz"
-  RELEASE_GOOGLESQL_PREBUILT_SHA256: "be3b298245baef90aa8d0fd061be0f2d35cd0247ff3150e92b50962af09b44b4"
-  RELEASE_GOOGLESQL_PREBUILT_URL_ARM64: ""
-  RELEASE_GOOGLESQL_PREBUILT_SHA256_ARM64: ""
+  RELEASE_GOOGLESQL_PREBUILT_URL: "https://github.com/permutive-engineering/bigquery-emulator/releases/download/googlesql-prebuilt/v0.1.6+gs-36dd14aa0657/googlesql-prebuilt-linux-amd64-clang18-36dd14aa0657-v0.1.6.tar.gz"
+  RELEASE_GOOGLESQL_PREBUILT_SHA256: "877c934a77da5c4f597be9842c7cd3fac1fe164681122bdf5b007a1a983de1b0"
+  RELEASE_GOOGLESQL_PREBUILT_URL_ARM64: "https://github.com/permutive-engineering/bigquery-emulator/releases/download/googlesql-prebuilt/v0.1.6+gs-36dd14aa0657/googlesql-prebuilt-linux-arm64-clang18-36dd14aa0657-v0.1.6.tar.gz"
+  RELEASE_GOOGLESQL_PREBUILT_SHA256_ARM64: "a0b5484ebb85bc4eeb1f33c2e8ad1ff6b70b2ce1cd4ded3622e1addff59f4737"
 
 jobs:
   engine:
@@ -555,42 +555,3 @@ jobs:
           } > "$appended"
           gh release edit "$REL_TAG" --notes-file "$appended"
           rm -f "$appended"
-
-      - name: Generate release badge JSON
-        env:
-          REL_TAG: ${{ inputs.ref || github.ref_name }}
-        run: |
-          set -euo pipefail
-          mkdir -p gh-pages-publish
-          go run ./tools/release badge --version="$REL_TAG" --out=gh-pages-publish/badge-release.json
-
-      - name: Publish release badge to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages-publish
-          publish_branch: gh-pages
-          enable_jekyll: false
-          keep_files: true
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          commit_message: "chore(release): publish badge for ${{ inputs.ref || github.ref_name }}"
-
-      - name: Bump README release badge cache buster
-        # shields.io caches endpoint badge images by URL; bump &v= on main
-        # whenever a release publishes fresh badge-release.json on gh-pages.
-        env:
-          REL_TAG: ${{ inputs.ref || github.ref_name }}
-        run: |
-          set -euo pipefail
-          cache_ver="${REL_TAG#v}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout -B main origin/main
-          go run ./tools/release readme-badge --version="$REL_TAG" --readme=README.md
-          git add README.md
-          if ! git diff --staged --quiet; then
-            git commit -m "chore(release): bump README release badge cache buster to ${cache_ver} [skip ci]"
-            git push origin main
-          fi

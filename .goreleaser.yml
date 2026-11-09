@@ -165,5 +165,5 @@ release:
     > **No macOS engine binary.** linux/amd64 + linux/arm64 archives
     > bundle the engine; macOS archives include the gateway binary
     > only. On macOS run the published multi-arch Docker image
-    > (`docker pull ghcr.io/vantaboard/bigquery-emulator:{{ .Tag }}`) or
+    > (`docker pull ghcr.io/permutive-engineering/bigquery-emulator:{{ .Tag }}`) or
     > supply your own engine binary via `--engine_binary=<path>`.
