@@ -8,6 +8,20 @@
 [![coverage (cpp)](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/vantaboard/bigquery-emulator/gh-pages/badge-cpp.json)](https://vantaboard.github.io/bigquery-emulator/coverage/cpp/index.html)
 [![Go version](https://img.shields.io/github/go-mod/go-version/vantaboard/bigquery-emulator)](go.mod)
 
+> [!NOTE]
+> This is Permutive's fork of [vantaboard/bigquery-emulator](https://github.com/vantaboard/bigquery-emulator).
+> It carries fixes that are open as pull requests upstream, and publishes
+> them as `ghcr.io/permutive-engineering/bigquery-emulator` (linux/amd64 and
+> linux/arm64).
+>
+> - `main` is an unchanged copy of upstream `main`.
+> - `permutive` is upstream `main` plus a merge of each open pull request
+>   and the release changes for this fork. Releases are tagged on it.
+>
+> When upstream merges one of the pull requests, sync `main`, merge it into
+> `permutive` and tag a new release. Send new fixes upstream first, then
+> merge their branch into `permutive`.
+
 A locally-runnable emulator of Google Cloud BigQuery, intended for local
 development and integration testing of applications that target the
 BigQuery REST API.
