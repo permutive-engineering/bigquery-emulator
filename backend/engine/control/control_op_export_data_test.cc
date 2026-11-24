@@ -10,8 +10,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <mutex>
+#include <iterator>
 #include <optional>
 #include <random>
 #include <string>
@@ -314,6 +316,32 @@ TEST_F(ControlOpExportDataTest, ExportWildcardUploadsTheFirstShard) {
   ASSERT_GE(reqs[0].body.size(), 8u);
   EXPECT_EQ(reqs[0].body.substr(0, 4), "PAR1");
   EXPECT_EQ(reqs[0].body.substr(reqs[0].body.size() - 4), "PAR1");
+}
+
+TEST_F(ControlOpExportDataTest, ExportKeepsTheSelectListOrderAndAliases) {
+  absl::Status s = RunDdl(
+      "EXPORT DATA OPTIONS(uri='gs://exports/people/renamed.csv', "
+      "format='CSV') AS SELECT name AS who, id FROM ds.people ORDER BY id");
+  ASSERT_TRUE(s.ok()) << s;
+
+  std::vector<RecordedRequest> reqs = server_.requests();
+  ASSERT_EQ(reqs.size(), 1u);
+  EXPECT_EQ(reqs[0].body, "who,id\nada,1\nlinus,2\n");
+}
+
+TEST_F(ControlOpExportDataTest, ExportWildcardToALocalUriWritesTheFirstShard) {
+  const fs::path dir = data_dir_ / "exports";
+  fs::create_directories(dir);
+  absl::Status s = RunDdl(absl::StrCat(
+      "EXPORT DATA OPTIONS(uri='file://",
+      (dir / "part-*.csv").string(),
+      "', format='CSV') AS SELECT id, name FROM ds.people ORDER BY id"));
+  ASSERT_TRUE(s.ok()) << s;
+
+  std::ifstream in(dir / "part-000000000000.csv");
+  std::string body((std::istreambuf_iterator<char>(in)),
+                   std::istreambuf_iterator<char>());
+  EXPECT_EQ(body, "id,name\n1,ada\n2,linus\n");
 }
 
 }  // namespace
